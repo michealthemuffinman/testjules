@@ -60,3 +60,13 @@ To make your game available for anyone to play on the internet, you can deploy i
 5.  **Deploy:**
     *   Scroll down and click **"Create Web Service"**. Render will automatically pull your code from GitHub, install the dependencies, and start the server.
     *   The first deployment might take a few minutes. Once it's live, Render will give you a public URL (like `https://your-game-name.onrender.com`). You can share this URL with anyone to play your game!
+
+### Stopping the Service
+
+If you no longer want your game to be live, you can stop the service to prevent it from running and incurring potential costs (even on a free plan, this is good practice).
+
+*   Go to your **Dashboard** on Render.
+*   Click on your web service (e.g., `my-cool-snake-game`).
+*   Navigate to the **"Settings"** tab.
+*   Scroll to the bottom of the page to find the **"Delete Service"** section.
+*   Clicking the **"Delete Service"** button will permanently stop and remove your game from the internet.
