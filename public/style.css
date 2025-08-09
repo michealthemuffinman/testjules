@@ -136,24 +136,43 @@ canvas {
   border-color: white transparent transparent transparent;
 }
 
-/* Show mobile controls only on smaller screens */
+/* --- Mobile and Tablet Overrides --- */
+
+/* Show D-Pad on devices that are likely touch-based */
 @media (max-width: 1024px) {
+  #mobile-controls {
+    display: block;
+  }
+}
+
+/* Portrait Mode: Stack layout, hide leaderboard for max game size */
+@media (orientation: portrait) and (max-width: 800px) {
   .container {
     flex-direction: column;
     height: auto;
     padding: 10px;
   }
-
   .game-area {
     width: 100%;
   }
-
   .leaderboard-area {
-    display: none; /* Hide leaderboard on mobile to maximize game screen size */
+    display: none;
   }
+}
 
-  #mobile-controls {
+/* Landscape Mode: Side-by-side layout, show leaderboard */
+@media (orientation: landscape) and (max-height: 650px) {
+  .container {
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+  }
+  .leaderboard-area {
     display: block;
+  }
+  .game-area {
+    /* Let the aspect-ratio container do its job */
+    width: 70vw;
   }
 }
 
