@@ -28,8 +28,9 @@ h1, h2 {
 
 #game-container {
   position: relative;
-  width: 800px; /* Match canvas width */
-  height: 600px; /* Match canvas height */
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 800 / 600;
 }
 
 canvas {
@@ -39,6 +40,8 @@ canvas {
   position: absolute;
   top: 0;
   left: 0;
+  width: 100%;
+  height: 100%;
 }
 
 #game-over-overlay {
