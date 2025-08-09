@@ -93,16 +93,45 @@ canvas {
 .d-pad button {
   background-color: rgba(255, 255, 255, 0.2);
   border: 2px solid rgba(255, 255, 255, 0.4);
-  color: white;
-  font-size: 24px;
   border-radius: 10px;
   cursor: pointer;
+  position: relative;
+}
+
+.d-pad button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
 }
 
 #d-pad-up { grid-area: 1 / 2 / 2 / 3; }
+#d-pad-up::after {
+  border-width: 0 10px 15px 10px;
+  border-color: transparent transparent white transparent;
+}
+
 #d-pad-left { grid-area: 2 / 1 / 3 / 2; }
+#d-pad-left::after {
+  border-width: 10px 15px 10px 0;
+  border-color: transparent white transparent transparent;
+}
+
 #d-pad-right { grid-area: 2 / 3 / 3 / 4; }
+#d-pad-right::after {
+  border-width: 10px 0 10px 15px;
+  border-color: transparent transparent transparent white;
+}
+
 #d-pad-down { grid-area: 3 / 2 / 4 / 3; }
+#d-pad-down::after {
+  border-width: 15px 10px 0 10px;
+  border-color: white transparent transparent transparent;
+}
 
 /* Show mobile controls only on smaller screens */
 @media (max-width: 1024px) {

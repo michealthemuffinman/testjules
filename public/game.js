@@ -86,11 +86,13 @@ function drawGame(gameState) {
         ctx.fillRect(head.x * gridSize + 11, head.y * gridSize + 5, 4, 4);
     });
 
-    // Draw instructions
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Use Arrow Keys or WASD to move', canvasWidth / 2, canvasHeight - 10);
+    // Draw instructions only on larger screens
+    if (window.innerWidth > 1024) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Use Arrow Keys or WASD to move', canvasWidth / 2, canvasHeight - 10);
+    }
 }
 
 replayButton.addEventListener('click', () => {
