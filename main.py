@@ -7,7 +7,6 @@ from fastapi.staticfiles import StaticFiles
 
 # --- App Setup ---
 app = FastAPI()
-app.mount("/", StaticFiles(directory="public", html=True), name="static")
 
 # --- Connection Management ---
 class ConnectionManager:
@@ -191,42 +190,30 @@ async def respawn_ai(player_id: str):
 # --- WebSocket Endpoint ---
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
-    player_id = None
+    player_id = str(uuid.uuid4())
+    spawn_point = get_safe_spawn_point()
+    players[player_id] = {
+        "id": player_id,
+        "ws": websocket,
+        "direction": {"dx": 1, "dy": 0},
+        "body": [spawn_point],
+        "score": 0,
+        "state": "playing",
+        "is_ai": False,
+    }
+    await manager.connect(websocket, player_id)
+    print(f"Client connected: {player_id}")
+
     try:
-        print("LOG: WebSocket endpoint entered. Awaiting connection...")
-        # The player is not fully "in the game" until they are in the `players` dict
-        # and the connection is accepted.
-
-        player_id = str(uuid.uuid4())
-        print(f"LOG: Generated new player_id: {player_id}")
-
-        spawn_point = get_safe_spawn_point()
-        print(f"LOG: Found safe spawn point for {player_id}: {spawn_point}")
-
-        # The websocket object cannot be directly stored in the global dict if it's
-        # going to be pickled or used in multiprocessing, but for asyncio it's fine.
-        # We will wrap it in a player object.
-        player_obj = {
-            "id": player_id,
-            "ws": websocket,
-            "direction": {"dx": 1, "dy": 0},
-            "body": [spawn_point],
-            "score": 0,
-            "state": "playing",
-            "is_ai": False,
-        }
-        players[player_id] = player_obj
-        print(f"LOG: Player {player_id} created and added to players dict.")
-
-        await manager.connect(websocket, player_id)
-        print(f"LOG: Connection for {player_id} accepted and managed.")
-
         while True:
             data = await websocket.receive_text()
-            print(f"LOG: Received data from {player_id}: {data}")
             message = json.loads(data)
             player = players.get(player_id)
-            if player and player["state"] == "playing" and message.get("type") == "direction":
+
+            if not player:
+                break
+
+            if player["state"] == "playing" and message.get("type") == "direction":
                 direction = message["direction"]
                 current_dir = player["direction"]
                 if direction == "up" and current_dir["dy"] == 0:
@@ -239,15 +226,14 @@ async def websocket_endpoint(websocket: WebSocket):
                     player["direction"] = {"dx": 1, "dy": 0}
 
     except WebSocketDisconnect:
-        print(f"LOG: Client {player_id} disconnected gracefully.")
-    except Exception as e:
-        print(f"ERROR: An unexpected error occurred with client {player_id}: {e}")
+        print(f"Client disconnected: {player_id}")
     finally:
-        if player_id:
-            print(f"LOG: Cleaning up resources for player {player_id}.")
-            manager.disconnect(player_id)
-            if player_id in players:
-                del players[player_id]
+        manager.disconnect(player_id)
+        if player_id in players:
+            del players[player_id]
+
+# Mount the static files directory AFTER the websocket endpoint
+app.mount("/", StaticFiles(directory="public", html=True), name="static")
 
 # --- App Startup ---
 @app.on_event("startup")
