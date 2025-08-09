@@ -1,0 +1,62 @@
+body {
+  background-color: #2c2c2c;
+  color: #f0f0f0;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+h1, h2 {
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 2px 2px 4px #000;
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 30px;
+}
+
+.game-area {
+  text-align: center;
+}
+
+canvas {
+  background-color: #111;
+  border: 3px solid #555;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.leaderboard-area {
+  padding-top: 100px; /* Align with top of game area */
+  width: 250px;
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.4);
+}
+
+#leaderboard {
+  list-style-type: none;
+  padding: 0;
+  color: #fff;
+}
+
+#leaderboard li {
+  padding: 8px;
+  margin-bottom: 5px;
+  font-size: 18px;
+  border-radius: 4px;
+  background-color: #2a2a2a;
+  border-left: 5px solid; /* The color will be set in JS */
+  transition: transform 0.2s;
+}
+
+#leaderboard li:hover {
+    transform: scale(1.05);
+}
