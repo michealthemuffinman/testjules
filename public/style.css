@@ -149,11 +149,7 @@ canvas {
   }
 
   .leaderboard-area {
-    display: block; /* Ensure leaderboard is visible */
-    width: 90%;
-    max-width: 500px;
-    padding-top: 20px;
-    order: -1; /* Display leaderboard above the game */
+    display: none; /* Hide leaderboard on mobile to maximize game screen size */
   }
 
   #mobile-controls {
