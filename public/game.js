@@ -117,33 +117,43 @@ function updateLeaderboard(players) {
     });
 }
 
-document.addEventListener('keydown', (event) => {
-    if (ws.readyState !== WebSocket.OPEN) {
-        return; // Don't send messages if not connected
-    }
+function sendDirection(direction) {
+    if (ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ type: 'direction', direction: direction }));
+}
 
+// Keyboard controls
+document.addEventListener('keydown', (event) => {
     let direction = null;
     switch (event.key) {
-        case 'ArrowUp':
-        case 'w':
-            direction = 'up';
-            break;
-        case 'ArrowDown':
-        case 's':
-            direction = 'down';
-            break;
-        case 'ArrowLeft':
-        case 'a':
-            direction = 'left';
-            break;
-        case 'ArrowRight':
-        case 'd':
-            direction = 'right';
-            break;
+        case 'ArrowUp': case 'w': direction = 'up'; break;
+        case 'ArrowDown': case 's': direction = 'down'; break;
+        case 'ArrowLeft': case 'a': direction = 'left'; break;
+        case 'ArrowRight': case 'd': direction = 'right'; break;
     }
-
     if (direction) {
-        event.preventDefault(); // Prevent scrolling the page with arrow keys
-        ws.send(JSON.stringify({ type: 'direction', direction: direction }));
+        event.preventDefault();
+        sendDirection(direction);
     }
 });
+
+// Mobile controls
+const upButton = document.getElementById('d-pad-up');
+const leftButton = document.getElementById('d-pad-left');
+const rightButton = document.getElementById('d-pad-right');
+const downButton = document.getElementById('d-pad-down');
+
+function handleTouch(event, direction) {
+    event.preventDefault();
+    sendDirection(direction);
+}
+
+upButton.addEventListener('touchstart', (e) => handleTouch(e, 'up'), { passive: false });
+leftButton.addEventListener('touchstart', (e) => handleTouch(e, 'left'), { passive: false });
+rightButton.addEventListener('touchstart', (e) => handleTouch(e, 'right'), { passive: false });
+downButton.addEventListener('touchstart', (e) => handleTouch(e, 'down'), { passive: false });
+
+upButton.addEventListener('click', (e) => handleTouch(e, 'up'));
+leftButton.addEventListener('click', (e) => handleTouch(e, 'left'));
+rightButton.addEventListener('click', (e) => handleTouch(e, 'right'));
+downButton.addEventListener('click', (e) => handleTouch(e, 'down'));

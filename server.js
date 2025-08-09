@@ -102,6 +102,21 @@ function getSafeSpawnPoint() {
     return spawnPoint;
 }
 
+function addAiPlayer() {
+    const playerId = `ai-${Math.random().toString(36).substr(2, 9)}`;
+    const spawnPoint = getSafeSpawnPoint();
+    players[playerId] = {
+        id: playerId,
+        ws: null, // AI players don't have a websocket connection
+        direction: { dx: 1, dy: 0 },
+        body: [spawnPoint],
+        score: 0,
+        state: 'playing',
+        isAi: true, // Flag to identify AI players
+    };
+    console.log('AI Player added:', playerId);
+}
+
 // --- WebSocket Connection Handling ---
 wss.on('connection', ws => {
   const playerId = `player-${Math.random().toString(36).substr(2, 9)}`;
@@ -155,11 +170,79 @@ wss.on('connection', ws => {
 });
 
 
+function updateAiDirections(allPlayers) {
+    const allFood = Object.values(food);
+    if (allFood.length === 0) return; // No food, no goal
+
+    const activeSnakes = allPlayers.filter(p => p.state === 'playing');
+
+    for (const player of allPlayers) {
+        if (!player.isAi || player.state !== 'playing') {
+            continue;
+        }
+
+        const head = player.body[0];
+
+        let closestFood = null;
+        let minDistance = Infinity;
+        for (const f of allFood) {
+            const distance = Math.abs(head.x - f.x) + Math.abs(head.y - f.y);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestFood = f;
+            }
+        }
+
+        if (!closestFood) continue;
+
+        const potentialDirections = [];
+        if (closestFood.x > head.x) potentialDirections.push({ dx: 1, dy: 0 });
+        if (closestFood.x < head.x) potentialDirections.push({ dx: -1, dy: 0 });
+        if (closestFood.y > head.y) potentialDirections.push({ dx: 0, dy: 1 });
+        if (closestFood.y < head.y) potentialDirections.push({ dx: 0, dy: -1 });
+
+        const isSafe = (dx, dy) => {
+            const nextHead = { x: head.x + dx, y: head.y + dy };
+            if (nextHead.x < 0 || nextHead.x >= boardWidth || nextHead.y < 0 || nextHead.y >= boardHeight) return false;
+            for (const otherPlayer of activeSnakes) {
+                for (const segment of otherPlayer.body) {
+                    if (nextHead.x === segment.x && nextHead.y === segment.y) return false;
+                }
+            }
+            return true;
+        };
+
+        const safeDirections = potentialDirections.filter(dir => isSafe(dir.dx, dir.dy) && (dir.dx !== -player.direction.dx || dir.dy !== -player.direction.dy));
+
+        if (safeDirections.length > 0) {
+            player.direction = safeDirections[Math.floor(Math.random() * safeDirections.length)];
+        } else {
+             // If no safe move towards food, try perpendicular moves
+            const perpendicularMoves = [];
+            if (player.direction.dx !== 0) { // moving horizontally
+                perpendicularMoves.push({ dx: 0, dy: -1 });
+                perpendicularMoves.push({ dx: 0, dy: 1 });
+            } else { // moving vertically
+                perpendicularMoves.push({ dx: -1, dy: 0 });
+                perpendicularMoves.push({ dx: 1, dy: 0 });
+            }
+            const safePerpendicular = perpendicularMoves.filter(dir => isSafe(dir.dx, dir.dy));
+            if(safePerpendicular.length > 0) {
+                player.direction = safePerpendicular[0];
+            }
+            // If still no safe move, do nothing and hope for the best
+        }
+    }
+}
+
 // --- Game Loop ---
 function gameLoop() {
   const allPlayers = Object.values(players);
 
-  // 1. Update positions and check for collisions for all playing snakes
+  // 1. Update AI directions
+  updateAiDirections(allPlayers);
+
+  // 2. Update positions and check for collisions for all playing snakes
   for (const player of allPlayers) {
     if (player.state !== 'playing') continue;
 
@@ -192,7 +275,10 @@ function gameLoop() {
 
     if (collided) {
       player.state = 'dead';
-      player.ws.send(JSON.stringify({ type: 'game_over' }));
+      if (player.ws) {
+        player.ws.send(JSON.stringify({ type: 'game_over' }));
+      }
+      // AI players will just be 'dead' and won't respawn automatically for now
     } else {
       // No collision, move snake forward
       player.body.unshift(newHead);
@@ -239,6 +325,9 @@ function gameLoop() {
 }
 
 setInterval(gameLoop, 100);
+
+// Add one AI player to the game at startup
+addAiPlayer();
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
