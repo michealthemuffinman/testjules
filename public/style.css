@@ -28,9 +28,8 @@ h1, h2 {
 
 #game-container {
   position: relative;
-  width: 100%;
-  max-width: 800px;
-  aspect-ratio: 800 / 600;
+  width: 800px;
+  height: 600px;
 }
 
 canvas {
@@ -40,8 +39,6 @@ canvas {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
 }
 
 #game-over-overlay {
@@ -76,104 +73,6 @@ canvas {
 
 #replay-button:hover {
   background-color: #45a049;
-}
-
-#mobile-controls {
-  display: none; /* Hidden by default */
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  z-index: 100;
-}
-
-.d-pad {
-  display: grid;
-  grid-template-columns: 50px 50px 50px;
-  grid-template-rows: 50px 50px 50px;
-  gap: 5px;
-}
-
-.d-pad button {
-  background-color: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 10px;
-  cursor: pointer;
-  position: relative;
-}
-
-.d-pad button::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 0;
-  height: 0;
-  border-style: solid;
-}
-
-#d-pad-up { grid-area: 1 / 2 / 2 / 3; }
-#d-pad-up::after {
-  border-width: 0 10px 15px 10px;
-  border-color: transparent transparent white transparent;
-}
-
-#d-pad-left { grid-area: 2 / 1 / 3 / 2; }
-#d-pad-left::after {
-  border-width: 10px 15px 10px 0;
-  border-color: transparent white transparent transparent;
-}
-
-#d-pad-right { grid-area: 2 / 3 / 3 / 4; }
-#d-pad-right::after {
-  border-width: 10px 0 10px 15px;
-  border-color: transparent transparent transparent white;
-}
-
-#d-pad-down { grid-area: 3 / 2 / 4 / 3; }
-#d-pad-down::after {
-  border-width: 15px 10px 0 10px;
-  border-color: white transparent transparent transparent;
-}
-
-/* --- Mobile and Tablet Overrides --- */
-
-/* Show D-Pad on devices that are likely touch-based */
-@media (max-width: 1024px) {
-  #mobile-controls {
-    display: block;
-  }
-}
-
-/* Portrait Mode: Stack layout, hide leaderboard for max game size */
-@media (orientation: portrait) and (max-width: 800px) {
-  .container {
-    flex-direction: column;
-    height: auto;
-    padding: 10px;
-  }
-  .game-area {
-    width: 100%;
-  }
-  .leaderboard-area {
-    display: none;
-  }
-}
-
-/* Landscape Mode: Side-by-side layout, show leaderboard */
-@media (orientation: landscape) and (max-height: 650px) {
-  .container {
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-  }
-  .leaderboard-area {
-    display: block;
-  }
-  .game-area {
-    /* Let the aspect-ratio container do its job */
-    width: 70vw;
-  }
 }
 
 .leaderboard-area {
