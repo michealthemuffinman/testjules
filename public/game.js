@@ -63,16 +63,27 @@ function drawGame(gameState) {
 
     // Draw players
     gameState.players.forEach(player => {
-        ctx.fillStyle = player.color;
-        player.body.forEach((segment, index) => {
+        if (!player.body || player.body.length === 0) return;
+
+        const headColor = player.color; // e.g., 'hsl(123, 100%, 70%)'
+        const tailColor = headColor.replace('70%', '50%'); // Dimmer version for the tail
+
+        // Draw tail segments (all segments after the head)
+        ctx.fillStyle = tailColor;
+        for (let i = 1; i < player.body.length; i++) {
+            const segment = player.body[i];
             ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
-            // Give the head a distinct look (e.g., eyes)
-            if (index === 0) {
-                ctx.fillStyle = '#000';
-                ctx.fillRect(segment.x * gridSize + 4, segment.y * gridSize + 4, 4, 4);
-                ctx.fillRect(segment.x * gridSize + 12, segment.y * gridSize + 4, 4, 4);
-            }
-        });
+        }
+
+        // Draw head
+        const head = player.body[0];
+        ctx.fillStyle = headColor;
+        ctx.fillRect(head.x * gridSize, head.y * gridSize, gridSize, gridSize);
+
+        // Draw eyes on the head
+        ctx.fillStyle = '#000';
+        ctx.fillRect(head.x * gridSize + 5, head.y * gridSize + 5, 4, 4);
+        ctx.fillRect(head.x * gridSize + 11, head.y * gridSize + 5, 4, 4);
     });
 
     // Draw instructions
