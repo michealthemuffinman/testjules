@@ -8,7 +8,13 @@
   <div class="container">
     <div class="game-area">
       <h1>Multiplayer Snake</h1>
-      <canvas id="gameCanvas"></canvas>
+      <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        <div id="game-over-overlay" class="hidden">
+          <h2>Game Over</h2>
+          <button id="replay-button">Replay</button>
+        </div>
+      </div>
     </div>
     <div class="leaderboard-area">
       <h2>Leaderboard</h2>

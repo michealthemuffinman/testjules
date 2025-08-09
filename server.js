@@ -77,30 +77,55 @@ function createFood() {
 // Create initial food
 createFood();
 
+function getSafeSpawnPoint() {
+    let spawnPoint = null;
+    let onSnake = true;
+
+    // Keep trying to find a spawn point until an empty one is found
+    while (onSnake) {
+        onSnake = false;
+        spawnPoint = {
+            x: Math.floor(Math.random() * boardWidth),
+            y: Math.floor(Math.random() * boardHeight),
+        };
+
+        for (const playerId in players) {
+            for (const segment of players[playerId].body) {
+                if (segment.x === spawnPoint.x && segment.y === spawnPoint.y) {
+                    onSnake = true;
+                    break; // Found a collision, try a new spawnPoint
+                }
+            }
+            if (onSnake) break;
+        }
+    }
+    return spawnPoint;
+}
+
 // --- WebSocket Connection Handling ---
 wss.on('connection', ws => {
   const playerId = `player-${Math.random().toString(36).substr(2, 9)}`;
   console.log('Client connected:', playerId);
 
   // Create new player
+  const spawnPoint = getSafeSpawnPoint();
   players[playerId] = {
     id: playerId,
     ws: ws,
     direction: { dx: 1, dy: 0 }, // Initial direction: right
-    body: [
-      { x: Math.floor(Math.random() * boardWidth), y: Math.floor(Math.random() * boardHeight) }
-    ],
+    body: [ spawnPoint ],
     score: 0,
-    isDead: false
+    isDead: false,
+    state: 'playing' // can be 'playing' or 'dead'
   };
 
   ws.on('message', message => {
     try {
       const data = JSON.parse(message);
       const player = players[playerId];
-      if (!player || player.isDead) return;
+      if (!player) return;
 
-      if (data.type === 'direction') {
+      if (data.type === 'direction' && player.state === 'playing') {
         const currentDirection = player.direction;
         if (data.direction === 'up' && currentDirection.dy === 0) {
           player.direction = { dx: 0, dy: -1 };
@@ -111,6 +136,12 @@ wss.on('connection', ws => {
         } else if (data.direction === 'right' && currentDirection.dx === 0) {
           player.direction = { dx: 1, dy: 0 };
         }
+      } else if (data.type === 'replay' && player.state === 'dead') {
+        // Respawn the player
+        player.state = 'playing';
+        player.body = [getSafeSpawnPoint()];
+        player.score = 0;
+        player.direction = { dx: 1, dy: 0 };
       }
     } catch (e) {
       console.error('Failed to parse message or process direction change:', e);
@@ -126,61 +157,70 @@ wss.on('connection', ws => {
 
 // --- Game Loop ---
 function gameLoop() {
-  // 1. Update player positions and check for deaths
-  for (const playerId in players) {
-    const player = players[playerId];
-    if (player.isDead) continue;
+  const allPlayers = Object.values(players);
+
+  // 1. Update positions and check for collisions for all playing snakes
+  for (const player of allPlayers) {
+    if (player.state !== 'playing') continue;
 
     const head = player.body[0];
     const newHead = {
       x: head.x + player.direction.dx,
-      y: head.y + player.direction.dy
+      y: head.y + player.direction.dy,
     };
 
-    // --- Collision Detection ---
+    // Check for collisions
+    let collided = false;
+    // Wall collision
     if (newHead.x < 0 || newHead.x >= boardWidth || newHead.y < 0 || newHead.y >= boardHeight) {
-      player.isDead = true;
-      continue;
+      collided = true;
     }
 
-    for (const otherPlayerId in players) {
-        const otherPlayer = players[otherPlayerId];
-        if (otherPlayer.isDead) continue;
+    // Snake collision (with any part of any snake, including self)
+    if (!collided) {
+      for (const otherPlayer of allPlayers) {
+        if (otherPlayer.state !== 'playing') continue;
         for (const segment of otherPlayer.body) {
-            if (newHead.x === segment.x && newHead.y === segment.y) {
-                player.isDead = true;
-                break;
-            }
+          if (newHead.x === segment.x && newHead.y === segment.y) {
+            collided = true;
+            break;
+          }
         }
-        if(player.isDead) break;
-    }
-    if(player.isDead) continue;
-
-    player.body.unshift(newHead);
-
-    let ateFood = false;
-    for (const foodId in food) {
-      if (newHead.x === food[foodId].x && newHead.y === food[foodId].y) {
-        player.score++;
-        ateFood = true;
-        delete food[foodId];
-        createFood();
+        if (collided) break;
       }
     }
 
-    if (!ateFood) {
-      player.body.pop();
+    if (collided) {
+      player.state = 'dead';
+      player.ws.send(JSON.stringify({ type: 'game_over' }));
+    } else {
+      // No collision, move snake forward
+      player.body.unshift(newHead);
+
+      // Check for food
+      let ateFood = false;
+      for (const foodId in food) {
+        if (newHead.x === food[foodId].x && newHead.y === food[foodId].y) {
+          player.score++;
+          ateFood = true;
+          delete food[foodId];
+          createFood();
+        }
+      }
+
+      // If no food eaten, remove tail
+      if (!ateFood) {
+        player.body.pop();
+      }
     }
   }
 
-  for (const playerId in players) {
-      if (players[playerId].isDead) {
-          delete players[playerId];
-      }
-  }
+  // 2. Prepare and broadcast game state
+  // Only include players that are currently playing
+  const activePlayers = allPlayers.filter(p => p.state === 'playing');
 
   const gameState = {
-    players: Object.values(players).map(p => ({
+    players: activePlayers.map(p => ({
       id: p.id,
       body: p.body,
       score: p.score,

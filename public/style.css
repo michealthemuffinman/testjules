@@ -26,10 +26,53 @@ h1, h2 {
   text-align: center;
 }
 
+#game-container {
+  position: relative;
+  width: 800px; /* Match canvas width */
+  height: 600px; /* Match canvas height */
+}
+
 canvas {
   background-color: #111;
   border: 3px solid #555;
   box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+#game-over-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+#game-over-overlay.hidden {
+  display: none;
+}
+
+#replay-button {
+  padding: 10px 20px;
+  font-size: 18px;
+  cursor: pointer;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+#replay-button:hover {
+  background-color: #45a049;
 }
 
 .leaderboard-area {

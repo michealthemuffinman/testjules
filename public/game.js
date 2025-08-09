@@ -1,5 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+const gameOverOverlay = document.getElementById('game-over-overlay');
+const replayButton = document.getElementById('replay-button');
 
 const gridSize = 20;
 const canvasWidth = 800;
@@ -18,11 +20,16 @@ ws.onopen = () => {
 
 ws.onmessage = (event) => {
     try {
-        const gameState = JSON.parse(event.data);
-        drawGame(gameState);
-        updateLeaderboard(gameState.players);
+        const message = JSON.parse(event.data);
+        if (message.type === 'game_over') {
+            gameOverOverlay.classList.remove('hidden');
+        } else {
+            // It's a game state update
+            drawGame(message);
+            updateLeaderboard(message.players);
+        }
     } catch (error) {
-        console.error('Error parsing game state:', error);
+        console.error('Error parsing message:', error);
     }
 };
 
@@ -74,6 +81,11 @@ function drawGame(gameState) {
     ctx.textAlign = 'center';
     ctx.fillText('Use Arrow Keys or WASD to move', canvasWidth / 2, canvasHeight - 10);
 }
+
+replayButton.addEventListener('click', () => {
+    ws.send(JSON.stringify({ type: 'replay' }));
+    gameOverOverlay.classList.add('hidden');
+});
 
 function updateLeaderboard(players) {
     const leaderboard = document.getElementById('leaderboard');
