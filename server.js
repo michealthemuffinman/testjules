@@ -277,8 +277,19 @@ function gameLoop() {
       player.state = 'dead';
       if (player.ws) {
         player.ws.send(JSON.stringify({ type: 'game_over' }));
+      } else if (player.isAi) {
+        // AI player died, schedule a respawn
+        setTimeout(() => {
+            const deadAi = players[player.id];
+            if (deadAi && deadAi.state === 'dead') {
+                deadAi.state = 'playing';
+                deadAi.body = [getSafeSpawnPoint()];
+                deadAi.score = 0;
+                deadAi.direction = { dx: 1, dy: 0 };
+                console.log('AI Player respawned:', deadAi.id);
+            }
+        }, 3000); // 3-second respawn delay
       }
-      // AI players will just be 'dead' and won't respawn automatically for now
     } else {
       // No collision, move snake forward
       player.body.unshift(newHead);
