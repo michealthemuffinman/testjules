@@ -1,2 +1,3 @@
-AI Player added: ai-u82eg706s
-Server running on port 3000
+INFO:     Will watch for changes in these directories: ['/app']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [12663] using WatchFiles
