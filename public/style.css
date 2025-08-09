@@ -138,11 +138,26 @@ canvas {
 
 /* Show mobile controls only on smaller screens */
 @media (max-width: 1024px) {
+  .container {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+  }
+
+  .game-area {
+    width: 100%;
+  }
+
+  .leaderboard-area {
+    display: block; /* Ensure leaderboard is visible */
+    width: 90%;
+    max-width: 500px;
+    padding-top: 20px;
+    order: -1; /* Display leaderboard above the game */
+  }
+
   #mobile-controls {
     display: block;
-  }
-  .leaderboard-area {
-    display: none; /* Hide leaderboard on small screens to save space */
   }
 }
 
