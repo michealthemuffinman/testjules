@@ -35,3 +35,28 @@ You can play with friends on the same local network (e.g., connected to the same
     *   **Linux:** Open a terminal and type `hostname -I` or `ip addr`.
 
 3.  **Connect from other devices:** Other players on the same network can open a web browser on their computer or phone and navigate to `http://<HOST_IP_ADDRESS>:3000` (replace `<HOST_IP_ADDRESS>` with the actual IP address you found in step 2, e.g., `http://192.168.1.15:3000`).
+
+## Deploying to the Internet (for Free)
+
+To make your game available for anyone to play on the internet, you can deploy it on a cloud platform. The following instructions are for a service called **Render**, which has a free tier that is great for projects like this.
+
+1.  **Push your code to a GitHub Repository:**
+    *   Create a new repository on [GitHub](https://github.com).
+    *   Follow the instructions to upload your project files (`server.js`, `package.json`, the `public` directory, etc.) to this repository.
+
+2.  **Sign up for Render:**
+    *   Go to [render.com](https://render.com/) and sign up for a free account. You can sign up using your GitHub account to make things easier.
+
+3.  **Create a New Web Service:**
+    *   From the Render dashboard, click **"New +"** and then **"Web Service"**.
+    *   Connect your GitHub account and select the repository you created in step 1.
+    *   Give your service a unique name (e.g., `my-cool-snake-game`). This will be part of your public URL.
+
+4.  **Configure the Service:**
+    *   **Runtime:** Render should automatically detect that this is a Node.js project.
+    *   **Build Command:** `npm install`
+    *   **Start Command:** `node server.js`
+
+5.  **Deploy:**
+    *   Scroll down and click **"Create Web Service"**. Render will automatically pull your code from GitHub, install the dependencies, and start the server.
+    *   The first deployment might take a few minutes. Once it's live, Render will give you a public URL (like `https://your-game-name.onrender.com`). You can share this URL with anyone to play your game!
