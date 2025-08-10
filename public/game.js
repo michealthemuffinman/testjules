@@ -10,7 +10,6 @@ const canvasHeight = 600;
 canvas.width = canvasWidth;
 canvas.height = canvasHeight;
 
-// Use wss:// for secure connections if the site is served over https
 const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
 const ws = new WebSocket(`${protocol}//${window.location.host}`);
 
@@ -24,7 +23,6 @@ ws.onmessage = (event) => {
         if (message.type === 'game_over') {
             gameOverOverlay.classList.remove('hidden');
         } else {
-            // It's a game state update
             drawGame(message);
             updateLeaderboard(message.players);
         }
@@ -35,7 +33,6 @@ ws.onmessage = (event) => {
 
 ws.onclose = () => {
     console.log('Disconnected from the game server.');
-    // Optional: Display a message to the user
     ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     ctx.fillStyle = 'white';
@@ -49,38 +46,28 @@ ws.onerror = (error) => {
 };
 
 function drawGame(gameState) {
-    // Clear canvas
-    ctx.fillStyle = '#111'; // A slightly lighter black
+    ctx.fillStyle = '#111';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // Draw food
-    ctx.fillStyle = '#ff0000'; // Bright red
+    ctx.fillStyle = '#ff0000';
     gameState.food.forEach(f => {
         ctx.beginPath();
         ctx.arc(f.x * gridSize + gridSize / 2, f.y * gridSize + gridSize / 2, gridSize / 2, 0, 2 * Math.PI);
         ctx.fill();
     });
 
-    // Draw players
     gameState.players.forEach(player => {
         if (!player.body || player.body.length === 0) return;
-
-        const headColor = player.color; // e.g., 'hsl(123, 100%, 70%)'
-        const tailColor = headColor.replace('70%', '50%'); // Dimmer version for the tail
-
-        // Draw tail segments (all segments after the head)
+        const headColor = player.color;
+        const tailColor = headColor.replace('70%', '50%');
         ctx.fillStyle = tailColor;
         for (let i = 1; i < player.body.length; i++) {
             const segment = player.body[i];
             ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
         }
-
-        // Draw head
         const head = player.body[0];
         ctx.fillStyle = headColor;
         ctx.fillRect(head.x * gridSize, head.y * gridSize, gridSize, gridSize);
-
-        // Draw eyes on the head
         ctx.fillStyle = '#000';
         ctx.fillRect(head.x * gridSize + 5, head.y * gridSize + 5, 4, 4);
         ctx.fillRect(head.x * gridSize + 11, head.y * gridSize + 5, 4, 4);
@@ -103,16 +90,11 @@ replayButton.addEventListener('click', () => {
 function updateLeaderboard(players) {
     const leaderboard = document.getElementById('leaderboard');
     if (!leaderboard) return;
-
-    leaderboard.innerHTML = ''; // Clear previous entries
-
-    // Sort players by score in descending order and take top 10
+    leaderboard.innerHTML = '';
     const sortedPlayers = players.sort((a, b) => b.score - a.score).slice(0, 10);
-
     sortedPlayers.forEach(player => {
         const li = document.createElement('li');
-        // Shorten the ID for display: 'player-abcde1234' -> 'abcde'
-        const shortId = player.id.substring(7, 12);
+        const shortId = player.id.substring(0, 8);
         li.textContent = `Player ${shortId}: ${player.score}`;
         li.style.borderColor = player.color;
         leaderboard.appendChild(li);
@@ -121,9 +103,8 @@ function updateLeaderboard(players) {
 
 document.addEventListener('keydown', (event) => {
     if (ws.readyState !== WebSocket.OPEN) {
-        return; // Don't send messages if not connected
+        return;
     }
-
     let direction = null;
     switch (event.key) {
         case 'ArrowUp':
@@ -143,9 +124,8 @@ document.addEventListener('keydown', (event) => {
             direction = 'right';
             break;
     }
-
     if (direction) {
-        event.preventDefault(); // Prevent scrolling the page with arrow keys
+        event.preventDefault();
         ws.send(JSON.stringify({ type: 'direction', direction: direction }));
     }
 });

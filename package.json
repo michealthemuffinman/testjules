@@ -1,0 +1,20 @@
+{
+  "name": "multiplayer-snake-game",
+  "version": "1.0.0",
+  "description": "A multiplayer survival IO snake game.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "snake",
+    "game",
+    "multiplayer",
+    "websockets"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
