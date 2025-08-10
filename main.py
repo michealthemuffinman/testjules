@@ -4,6 +4,7 @@ import random
 import uuid
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 # --- App Setup ---
 app = FastAPI()
@@ -232,8 +233,14 @@ async def websocket_endpoint(websocket: WebSocket):
         if player_id in players:
             del players[player_id]
 
-# Mount the static files directory AFTER the websocket endpoint
-app.mount("/", StaticFiles(directory="public", html=True), name="static")
+# --- Static File Serving ---
+# Serve other static files (CSS, JS) from the 'public' directory
+app.mount("/static", StaticFiles(directory="public"), name="static")
+
+# Serve the main index.html file at the root path
+@app.get("/")
+async def get_root():
+    return FileResponse("public/index.html")
 
 # --- App Startup ---
 @app.on_event("startup")
